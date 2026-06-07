@@ -3,11 +3,13 @@ import ProfileCard from "./Profile-box";
 
 const StateObjectWithFunc = () => {
   const [user, setUser] = useState({
-    name: "yash",
+    name: "",
     age: "",
     email: "",
    
   });
+
+  const [users, setUsers] = useState([]);
 
   const handleChange = (e) => {
     setUser({
@@ -16,10 +18,33 @@ const StateObjectWithFunc = () => {
     });
   };
 
-  return (
+  const addUser= ()=>{
+    if (!user.name || !user.age || !user.email) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    setUsers((prevUsers)=>[
+      ...prevUsers, 
+      {
+         id: Date.now(),
+    name: user.name,
+    age: user.age,
+    email: user.email,
+      }
+    ]);
+
+    setUser({
+      name: "",
+      age:"",
+      email:"",
+
+    })
+
+  }
+    return (
     <div>
-      <p>Name: {user.name}</p>
-      <p>Hello {user.name} to the batch</p>
+     
 
       <input
         type="text"
@@ -44,10 +69,10 @@ const StateObjectWithFunc = () => {
         placeholder="Enter Email"
         onChange={handleChange}
       />
-
+        <button onClick={addUser}>Add User</button>
       <hr />
 
-      <ProfileCard
+      {/* <ProfileCard
         name={user.name}
         age={user.age}
         email={user.email}
@@ -57,7 +82,30 @@ const StateObjectWithFunc = () => {
         age={user.age}
         email={user.email}
       />
-    </div>
+      <ProfileCard
+        name={user.name}
+        age={user.age}
+        email={user.email}
+      />
+     
+
+    </div>,
+
+
+  );
+}; */}
+
+{users.map((item) => (
+        <ProfileCard
+          key={item.id}
+          name={item.name}
+          age={item.age}
+          email={item.email}
+        />
+      ))}
+    
+     </div>
+
   );
 };
 
