@@ -14,7 +14,9 @@ import { createRoot } from 'react-dom/client'
 // import ProfileNewObjectState from './states/optmised-input-component'
 // import WeatherAnimation from '../../State-projects.jsx/WeatherForcasting'
 // import TodoApp from '../../State-projects.jsx/Todo'
-import TodoPage from '../../State-projects.jsx/Todo-from-scratch'
+// import TodoPage from '../../State-projects.jsx/Todo-from-scratch'
+// import TodoPageOld from '../../State-projects.jsx/Todo-from-scratch'
+import TodoPage from '../../Todo-Components/Todo-page'
 // import Greetings from './1.Basic-Components/greeting-by-class'
 // import Footer from './2. Webpages/Footer'
 // import Header from './2. Webpages/Header'
@@ -52,6 +54,7 @@ createRoot(document.getElementById('root')).render(
 
 {/* <WeatherAnimation/> */}
 {/* <TodoApp/> */}
+{/* <TodoPageOld/> */}
 <TodoPage/>
  </>
 
