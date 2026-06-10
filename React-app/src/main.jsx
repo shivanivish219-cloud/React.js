@@ -1,5 +1,9 @@
 
 import { createRoot } from 'react-dom/client'
+// import LifecycleFC from '../../classcomponent-lifecycle/functionComponent-lifecycle'
+// import LifecycleDemoPart2 from '../../classcomponent-lifecycle/functionComponent-lifecycle-2'
+// import LifeCycleAllDemo from '../../classcomponent-lifecycle/Lifecycle'
+import MouseTrackerBugComp from '../../classcomponent-lifecycle/memoryleak'
 // import DarkTheme from '../../State-projects.jsx/Dark-theme'
 // import DarkThemeToggle from '../../State-projects.jsx/Dark-theme'
 // import FruitList from '../../array/Fruits-list'
@@ -16,7 +20,9 @@ import { createRoot } from 'react-dom/client'
 // import TodoApp from '../../State-projects.jsx/Todo'
 // import TodoPage from '../../State-projects.jsx/Todo-from-scratch'
 // import TodoPageOld from '../../State-projects.jsx/Todo-from-scratch'
-import TodoPage from '../../Todo-Components/Todo-page'
+// import TodoPage from '../../Todo-Components/Todo-page'
+// import ChatApp from '../../State-projects.jsx/Chat-UI'
+// import LifecycleCC from '../../classcomponent-lifecycle/Mounting-CC-lifecycle'
 // import Greetings from './1.Basic-Components/greeting-by-class'
 // import Footer from './2. Webpages/Footer'
 // import Header from './2. Webpages/Header'
@@ -55,7 +61,13 @@ createRoot(document.getElementById('root')).render(
 {/* <WeatherAnimation/> */}
 {/* <TodoApp/> */}
 {/* <TodoPageOld/> */}
-<TodoPage/>
+{/* <TodoPage/> */}
+{/* <ChatApp/> */}
+{/* <LifecycleCC/> */}
+{/* <LifecycleFC/> */}
+{/* <LifecycleDemoPart2/> */}
+{/* <LifeCycleAllDemo/> */}
+<MouseTrackerBugComp/>
  </>
 
 
