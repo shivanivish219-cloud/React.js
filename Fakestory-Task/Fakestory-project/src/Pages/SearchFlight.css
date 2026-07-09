@@ -1,0 +1,108 @@
+.flight-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 24px;
+  font-family: "Segoe UI", sans-serif;
+  background: #f8f9fb;
+  border-radius: 12px;
+}
+
+.flight-heading {
+  text-align: center;
+  color: #1a73e8;
+  margin-bottom: 24px;
+}
+
+/* filter row */
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.search-section {
+  display: inline-block;
+  margin: 6px;
+}
+
+.filter-select,
+.filter-input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+  border-color: #1a73e8;
+}
+
+.divider {
+  margin: 20px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.no-flights {
+  text-align: center;
+  color: #888;
+  padding: 30px 0;
+}
+
+.flight-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.flight-airline {
+  margin: 0 0 6px;
+  font-size: 18px;
+  color: #222;
+}
+
+.flight-route,
+.flight-timing,
+.flight-duration,
+.flight-price,
+.flight-stops {
+  margin: 2px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.flight-price {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.flight-stops {
+  color: #1a73e8;
+  font-weight: 500;
+}
+
+.book-btn {
+  margin-top: 10px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.book-btn:hover {
+  background: #1558b0;
+}

@@ -52,7 +52,18 @@
 
 body {
   margin: 0;
+  transition: 0.3s;
 }
+/* .light-theme {
+  background: white;
+  color: black;
+}
+
+.dark-theme {
+  background: #222;
+  color: white;
+} */
+
 
 #root {
   width: 1126px;
@@ -109,3 +120,4 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
