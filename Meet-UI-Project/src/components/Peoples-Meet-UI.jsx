@@ -1,5 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useContext, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
+import { ThemeContext, ThemeProvider } from "../Context/ThemeContext";
+// import { useContext } from "react";
 
 // ---- 1. Dummy data (baad me ye API se aayega) ----
 const peopleData = [
@@ -28,6 +30,8 @@ function getInitial(name) {
 }
 
 export default function PeoplePanel() {
+  const { darkMode, toggleTheme } = useContext(ThemeContext);
+
   // useSearchParams se URL ka ?role=teacher read aur update hota hai
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -75,9 +79,25 @@ export default function PeoplePanel() {
     <div className="people-panel">
       <div className="people-panel__header">
         <h3>People</h3>
-        <button aria-label="Close" className="people-panel__close">
-          ×
-        </button>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <button
+            className="theme-btn"
+            onClick={toggleTheme}
+            aria-label="Toggle Theme"
+          >
+            {darkMode ? "☀️" : "🌙"}
+          </button>
+
+          <button aria-label="Close" className="people-panel__close">
+            ×
+          </button>
+        </div>
       </div>
 
       <input
