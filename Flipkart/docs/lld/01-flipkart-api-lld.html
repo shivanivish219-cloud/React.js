@@ -1,0 +1,1084 @@
+<title>Flipkart API LLD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#F5F6FB; --surface:#FFFFFF; --surface-alt:#ECEEF6; --code-bg:#EDEFF8;
+    --ink:#141829; --ink-soft:#545A78; --ink-faint:#8489A6;
+    --border:#DBDEEC; --border-strong:#C3C7DE;
+    --accent-products:#2A3EB1; --accent-cart:#B8701A; --accent-wishlist:#B0446E;
+    --accent-danger:#B23A2B; --accent-success:#2F8F5B; --accent-auth:#1C8A6E;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans",system-ui,sans-serif;}
+  h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif; color:var(--ink); text-wrap:balance; font-weight:700;}
+  code, .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;}
+  a{color:var(--accent-products);}
+
+  .top{padding:56px 32px 40px; position:relative; overflow:hidden; border-bottom:1px solid var(--border);}
+  .top::before{content:""; position:absolute; inset:0; opacity:.5;
+    background-image: radial-gradient(var(--border-strong) 1px, transparent 1px);
+    background-size:18px 18px; mask-image:linear-gradient(to bottom, black, transparent 85%); pointer-events:none;}
+  .top-inner{max-width:1240px; margin:0 auto; position:relative;}
+  .eyebrow{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:14px;}
+  .top h1{font-size:clamp(32px,5vw,46px); line-height:1.05; margin-bottom:10px;}
+  .top .sub{font-size:16px; color:var(--ink-soft); max-width:62ch; line-height:1.55; margin-bottom:22px;}
+
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;}
+  .chip{border:1px solid var(--border-strong); background:var(--surface-alt); padding:5px 11px; border-radius:999px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft);}
+
+  .legend{display:flex; flex-wrap:wrap; gap:18px;}
+  .legend-item{display:flex; align-items:center; gap:7px; font-size:13px; color:var(--ink-soft);}
+  .legend-dot{width:10px; height:10px; border-radius:50%; flex:0 0 auto;}
+
+  .page{max-width:1240px; margin:0 auto; padding:0 32px 100px;}
+  .layout{display:grid; grid-template-columns:210px 1fr; gap:48px; align-items:start; padding-top:36px;}
+
+  .sidenav{position:sticky; top:20px; display:flex; flex-direction:column; gap:2px;}
+  .sidenav a{display:flex; gap:10px; align-items:baseline; padding:7px 10px; border-radius:6px; text-decoration:none; color:var(--ink-soft); font-size:13.5px;}
+  .sidenav a:hover{background:var(--surface-alt); color:var(--ink);}
+  .sidenav .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-faint);}
+  .sidenav-sub{display:flex; flex-direction:column; gap:1px; margin:0 0 4px 14px; padding-left:10px; border-left:1px solid var(--border);}
+  .sidenav-sub a{padding:4px 8px; font-size:12px;}
+  .sidenav-sub .n{font-size:10px;}
+
+  .content{display:flex; flex-direction:column; gap:68px;}
+  .sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px;}
+  .sec-head .n{font-family:"IBM Plex Mono",monospace; font-size:14px; color:var(--accent-products);}
+  .sec-head h2{font-size:24px;}
+  .sec-intro{color:var(--ink-soft); font-size:15px; line-height:1.6; max-width:70ch; margin-bottom:20px;}
+  .sec-intro + .sec-intro{margin-top:-12px;}
+  .sec h3{font-size:16px; margin:30px 0 12px; color:var(--ink);}
+  .sec h3:first-of-type{margin-top:4px;}
+
+  .badge-shipped{display:inline-block; vertical-align:middle; margin-left:10px; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; color:#fff; background:var(--accent-success); padding:3px 9px; border-radius:999px;}
+
+  .decision.a{border-left-color:var(--accent-auth);}
+  .superseded{display:block; margin-top:8px; font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--accent-auth);}
+
+  .notelist{margin:0 0 18px 22px; color:var(--ink-soft); font-size:14px; line-height:1.65;}
+  .notelist li{margin-bottom:7px;}
+  .notelist code{background:var(--code-bg); padding:1px 6px; border-radius:4px; font-size:12.8px;}
+
+  .diagram{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 20px 6px; overflow-x:auto; margin-bottom:14px;}
+  .diagram svg{width:100%; height:auto; display:block; color:var(--ink); min-width:640px;}
+  .diagram figcaption{margin:10px 2px 16px; font-size:13px; color:var(--ink-soft); max-width:72ch; line-height:1.5;}
+
+  .tbl-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:10px;}
+  table{width:100%; border-collapse:collapse; font-size:13.5px; min-width:560px;}
+  th,td{padding:9px 14px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top;}
+  th{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); background:var(--surface-alt);}
+  tr:last-child td{border-bottom:none;}
+  td code{background:var(--code-bg); padding:1px 6px; border-radius:4px; font-size:12.5px;}
+  .status-2{color:var(--accent-success); font-family:"IBM Plex Mono",monospace; font-size:12.5px;}
+  .status-4{color:var(--accent-danger); font-family:"IBM Plex Mono",monospace; font-size:12.5px;}
+  .auth-tag{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.03em; color:var(--accent-auth); border:1px solid var(--accent-auth); border-radius:4px; padding:1px 5px; margin-right:6px; vertical-align:middle;}
+
+  .tree{font-family:"IBM Plex Mono",monospace; font-size:12.8px; background:var(--code-bg); border:1px solid var(--border); border-radius:10px; padding:18px 22px; overflow-x:auto; line-height:1.72; white-space:pre;}
+  .tree .cm{color:var(--ink-faint);}
+  .tree .hi-p{color:var(--accent-products);}
+  .tree .hi-c{color:var(--accent-cart);}
+  .tree .hi-w{color:var(--accent-wishlist);}
+
+  .decisions{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px;}
+  .decision{border:1px solid var(--border); border-left:3px solid var(--accent-products); background:var(--surface); border-radius:8px; padding:14px 16px;}
+  .decision.c{border-left-color:var(--accent-cart);}
+  .decision.w{border-left-color:var(--accent-wishlist);}
+  .decision.n{border-left-color:var(--ink-faint);}
+  .decision h4{font-size:14px; margin-bottom:6px;}
+  .decision p{font-size:13px; color:var(--ink-soft); line-height:1.55;}
+  .decision p.src{margin-top:8px; font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-faint); background:var(--code-bg); border-radius:4px; padding:6px 9px;}
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;}
+    .sidenav{position:sticky; top:0; flex-direction:row; overflow-x:auto; gap:6px; padding:10px 4px; background:var(--bg); border-bottom:1px solid var(--border); z-index:5; margin:0 -32px 8px; padding-left:32px;}
+    .sidenav a{flex:0 0 auto; white-space:nowrap;}
+    .sidenav-sub{display:none;}
+  }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="eyebrow">Codes / 6.Apps / 4.Flipkart</div>
+    <h1>Flipkart API</h1>
+    <p class="sub">Low-Level Design — a modular Express&nbsp;5 + MongoDB backend covering Products, Cart, Wishlist, and Users/Auth. No service layer, JWT + revocable sessions, cursor pagination throughout.</p>
+    <div class="chip-row">
+      <span class="chip">TypeScript</span>
+      <span class="chip">Express 5</span>
+      <span class="chip">MongoDB + Mongoose</span>
+      <span class="chip">Redis (resilient cache)</span>
+      <span class="chip">pm2 cluster ×4</span>
+      <span class="chip">zod env validation</span>
+      <span class="chip">Swagger /api-docs</span>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:var(--accent-products)"></span>Products</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--accent-cart)"></span>Cart</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--accent-wishlist)"></span>Wishlist</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--ink-faint)"></span>Shared / infra</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--accent-auth)"></span>Users / Auth</span>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+<div class="layout">
+
+  <nav class="sidenav">
+    <a href="#overview"><span class="n">01</span>Overview</a>
+    <a href="#arch"><span class="n">02</span>Layered Architecture</a>
+    <a href="#modules"><span class="n">03</span>Module Map</a>
+    <a href="#redis"><span class="n">04</span>Bootstrap &amp; Redis Resilience</a>
+    <div class="sidenav-sub">
+      <a href="#redis-boot"><span class="n">4.1</span>Boot sequence</a>
+      <a href="#redis-gatekeeper"><span class="n">4.2</span>Runtime gatekeeper</a>
+      <a href="#redis-config"><span class="n">4.3</span>Config reference</a>
+      <a href="#redis-decisions"><span class="n">4.4</span>Decisions</a>
+    </div>
+    <a href="#model"><span class="n">05</span>Data Model</a>
+    <a href="#api"><span class="n">06</span>API Surface</a>
+    <a href="#sequence"><span class="n">07</span>Sequence Flows</a>
+    <a href="#cursor"><span class="n">08</span>Cursor Pagination</a>
+    <a href="#middleware"><span class="n">09</span>Middleware Pipeline</a>
+    <a href="#auth"><span class="n">10</span>Users &amp; Auth</a>
+    <div class="sidenav-sub">
+      <a href="#auth-schema"><span class="n">10.1</span>Schema</a>
+      <a href="#auth-routes"><span class="n">10.2</span>Routes</a>
+      <a href="#auth-cart-wishlist"><span class="n">10.3</span>Cart &amp; Wishlist</a>
+      <a href="#auth-middleware"><span class="n">10.4</span>Auth middleware</a>
+      <a href="#auth-session-lifecycle"><span class="n">10.5</span>Session lifecycle</a>
+      <a href="#auth-decisions"><span class="n">10.6</span>Decisions</a>
+    </div>
+    <a href="#decisions"><span class="n">11</span>Design Decisions</a>
+  </nav>
+
+  <main class="content">
+
+    <!-- 01 OVERVIEW -->
+    <section id="overview" class="sec">
+      <div class="sec-head"><span class="n">01</span><h2>Overview</h2></div>
+      <p class="sec-intro">Three features, one pattern each: model → validation → controller → router. Controllers call Mongoose directly — there is deliberately no service layer at this scope.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Aspect</th><th>Choice</th><th>Why it matters</th></tr></thead>
+          <tbody>
+            <tr><td>Feature scope</td><td>Products (catalog CRUD) · Cart (line items) · Wishlist (favorites)</td><td>Each is a self-contained 5-file slice: <code>model / types / validation / controller / router</code></td></tr>
+            <tr><td>Persistence</td><td>Single MongoDB connection, no transactions</td><td>No multi-document invariant needs one — each write is one document</td></tr>
+            <tr><td>Process model</td><td>pm2 cluster, 4 workers in prod</td><td>Controllers hold no in-memory state — 4 processes can't share memory, so nothing may live outside the DB</td></tr>
+            <tr><td>Identity</td><td>JWT access + refresh, revocable sessions</td><td>Cart and Wishlist are scoped by <code>userId</code> and auth-gated; Products stays public — see <a href="#auth">§10</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 02 ARCHITECTURE -->
+    <section id="arch" class="sec">
+      <div class="sec-head"><span class="n">02</span><h2>Layered Architecture</h2></div>
+      <p class="sec-intro">One request's path, top to bottom: through the shared middleware chain, into the feature router it matches, down to the controller, model, and MongoDB. Every box below exists as a real file in <code>src/</code>.</p>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 600" role="img" aria-label="Request flows from Client through the app.ts middleware pipeline, into one of three routers, its controller, its Mongoose model, and MongoDB.">
+          <defs>
+            <marker id="ahA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- Client -->
+          <rect x="370" y="16" width="160" height="44" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="450" y="43" text-anchor="middle" font-size="13" font-weight="600">Client</text>
+          <line x1="450" y1="60" x2="450" y2="96" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <text x="462" y="82" font-size="10.5" fill="var(--ink-faint)">HTTP request</text>
+
+          <!-- Middleware band -->
+          <rect x="30" y="98" width="840" height="132" rx="10" fill="var(--surface-alt)" stroke="var(--border)"/>
+          <text x="46" y="118" font-size="10.5" font-family="IBM Plex Mono, monospace" fill="var(--ink-soft)">app.ts — middleware pipeline, in execution order →</text>
+
+          <g font-family="IBM Plex Mono, monospace" font-size="9">
+            <!-- 7 boxes -->
+            <g transform="translate(40,140)"><rect width="108" height="46" rx="6" fill="var(--surface)" stroke="var(--border-strong)"/><circle cx="12" cy="12" r="8" fill="none" stroke="var(--ink-faint)"/><text x="12" y="15.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">1</text><text x="54" y="30" text-anchor="middle">helmet()</text></g>
+            <g transform="translate(156,140)"><rect width="108" height="46" rx="6" fill="var(--surface)" stroke="var(--border-strong)"/><circle cx="12" cy="12" r="8" fill="none" stroke="var(--ink-faint)"/><text x="12" y="15.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">2</text><text x="54" y="30" text-anchor="middle">cors()</text></g>
+            <g transform="translate(272,140)"><rect width="108" height="46" rx="6" fill="var(--surface)" stroke="var(--border-strong)"/><circle cx="12" cy="12" r="8" fill="none" stroke="var(--ink-faint)"/><text x="12" y="15.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">3</text><text x="54" y="30" text-anchor="middle">zstdCompress</text></g>
+            <g transform="translate(388,140)"><rect width="108" height="46" rx="6" fill="var(--surface)" stroke="var(--border-strong)"/><circle cx="12" cy="12" r="8" fill="none" stroke="var(--ink-faint)"/><text x="12" y="15.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">4</text><text x="54" y="30" text-anchor="middle">compression()</text></g>
+            <g transform="translate(504,140)"><rect width="108" height="46" rx="6" fill="var(--surface)" stroke="var(--border-strong)"/><circle cx="12" cy="12" r="8" fill="none" stroke="var(--ink-faint)"/><text x="12" y="15.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">5</text><text x="54" y="30" text-anchor="middle">express.json()</text></g>
+            <g transform="translate(620,140)"><rect width="108" height="46" rx="6" fill="var(--surface)" stroke="var(--border-strong)"/><circle cx="12" cy="12" r="8" fill="none" stroke="var(--ink-faint)"/><text x="12" y="15.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">6</text><text x="54" y="30" text-anchor="middle">requestTimeout</text></g>
+            <g transform="translate(736,140)"><rect width="108" height="46" rx="6" fill="var(--surface)" stroke="var(--border-strong)"/><circle cx="12" cy="12" r="8" fill="none" stroke="var(--ink-faint)"/><text x="12" y="15.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">7</text><text x="54" y="30" text-anchor="middle">http logger</text></g>
+          </g>
+
+          <!-- band -> routers bus -->
+          <line x1="450" y1="230" x2="450" y2="246" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="170" y1="246" x2="730" y2="246" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="170" y1="246" x2="170" y2="262" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <line x1="450" y1="246" x2="450" y2="262" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <line x1="730" y1="246" x2="730" y2="262" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <text x="176" y="240" font-size="10" fill="var(--ink-faint)">app.use('/products' | '/cart' | '/wishlist', router)</text>
+
+          <!-- Router row -->
+          <g font-size="12">
+            <rect x="40" y="264" width="260" height="50" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <rect x="40" y="264" width="4" height="50" fill="var(--accent-products)"/>
+            <text x="170" y="286" text-anchor="middle" font-weight="600">products.router</text>
+            <text x="170" y="302" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">/products</text>
+
+            <rect x="320" y="264" width="260" height="50" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <rect x="320" y="264" width="4" height="50" fill="var(--accent-cart)"/>
+            <text x="450" y="286" text-anchor="middle" font-weight="600">cart.router</text>
+            <text x="450" y="302" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">/cart</text>
+
+            <rect x="600" y="264" width="260" height="50" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <rect x="600" y="264" width="4" height="50" fill="var(--accent-wishlist)"/>
+            <text x="730" y="286" text-anchor="middle" font-weight="600">wishlist.router</text>
+            <text x="730" y="302" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">/wishlist</text>
+          </g>
+
+          <!-- router -> controller -->
+          <line x1="170" y1="314" x2="170" y2="350" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <line x1="450" y1="314" x2="450" y2="350" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <line x1="730" y1="314" x2="730" y2="350" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <text x="462" y="336" font-size="10" fill="var(--ink-faint)">delegates to controller</text>
+
+          <!-- Controller row -->
+          <g font-size="12">
+            <rect x="40" y="350" width="260" height="50" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <rect x="40" y="350" width="4" height="50" fill="var(--accent-products)"/>
+            <text x="170" y="372" text-anchor="middle" font-weight="600">products.controller</text>
+            <text x="170" y="388" text-anchor="middle" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">validate.* → 400</text>
+
+            <rect x="320" y="350" width="260" height="50" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <rect x="320" y="350" width="4" height="50" fill="var(--accent-cart)"/>
+            <text x="450" y="372" text-anchor="middle" font-weight="600">cart.controller</text>
+            <text x="450" y="388" text-anchor="middle" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">validate.* → 400</text>
+
+            <rect x="600" y="350" width="260" height="50" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <rect x="600" y="350" width="4" height="50" fill="var(--accent-wishlist)"/>
+            <text x="730" y="372" text-anchor="middle" font-weight="600">wishlist.controller</text>
+            <text x="730" y="388" text-anchor="middle" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">validate.* → 400</text>
+          </g>
+
+          <!-- controller -> model -->
+          <line x1="170" y1="400" x2="170" y2="436" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <line x1="450" y1="400" x2="450" y2="436" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <line x1="730" y1="400" x2="730" y2="436" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <text x="462" y="422" font-size="10" fill="var(--ink-faint)">Model.find / create / update (Mongoose)</text>
+
+          <!-- Model row -->
+          <g font-size="12">
+            <rect x="40" y="436" width="260" height="50" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <rect x="40" y="436" width="4" height="50" fill="var(--accent-products)"/>
+            <text x="170" y="458" text-anchor="middle" font-weight="600">Product</text>
+            <text x="170" y="474" text-anchor="middle" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">mongoose.model()</text>
+
+            <rect x="320" y="436" width="260" height="50" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <rect x="320" y="436" width="4" height="50" fill="var(--accent-cart)"/>
+            <text x="450" y="458" text-anchor="middle" font-weight="600">CartItem</text>
+            <text x="450" y="474" text-anchor="middle" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">mongoose.model()</text>
+
+            <rect x="600" y="436" width="260" height="50" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <rect x="600" y="436" width="4" height="50" fill="var(--accent-wishlist)"/>
+            <text x="730" y="458" text-anchor="middle" font-weight="600">WishlistItem</text>
+            <text x="730" y="474" text-anchor="middle" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">mongoose.model()</text>
+          </g>
+
+          <!-- model -> mongo bus -->
+          <line x1="170" y1="486" x2="170" y2="502" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="450" y1="486" x2="450" y2="502" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="730" y1="486" x2="730" y2="502" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="170" y1="502" x2="730" y2="502" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="450" y1="502" x2="450" y2="522" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahA)"/>
+          <text x="462" y="516" font-size="10" fill="var(--ink-faint)">driver call</text>
+
+          <rect x="290" y="524" width="320" height="54" rx="8" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+          <text x="450" y="547" text-anchor="middle" font-weight="700" font-size="13">MongoDB</text>
+          <text x="450" y="563" text-anchor="middle" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">flip-commerce · products / cartitems / wishlistitems</text>
+        </svg>
+        <figcaption>Happy-path request lifecycle. All three feature slices share the same shape: router → controller (validates inline, no separate validation layer file is invoked as middleware) → Mongoose model → MongoDB. Colour = owning feature, grey = shared infra.</figcaption>
+      </figure>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 370" role="img" aria-label="Two failure paths: an unmatched route returns 404 via notFound, and any thrown error is caught by errorHandler which branches on CastError, a headers-already-sent race, or a generic 500.">
+          <defs>
+            <marker id="ahB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect x="310" y="20" width="280" height="40" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="450" y="45" text-anchor="middle" font-size="12.5">Unmatched route</text>
+          <line x1="450" y1="60" x2="450" y2="94" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahB)"/>
+          <text x="462" y="82" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">app.use(notFound)</text>
+          <rect x="220" y="96" width="460" height="40" rx="8" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+          <text x="450" y="121" text-anchor="middle" font-size="12" font-family="IBM Plex Mono, monospace">404 → { error: "Route GET /xyz not found" }</text>
+
+          <line x1="40" y1="160" x2="860" y2="160" stroke="var(--border-strong)" stroke-width="1" stroke-dasharray="3 5"/>
+          <text x="450" y="177" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">— any thrown error (httpError, CastError, uncaught Error) —</text>
+
+          <rect x="290" y="190" width="320" height="40" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="450" y="215" text-anchor="middle" font-size="12.5">Handler throws</text>
+          <line x1="450" y1="230" x2="450" y2="258" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahB)"/>
+          <text x="462" y="248" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">Express 5 auto-forwards</text>
+          <rect x="320" y="260" width="260" height="44" rx="8" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+          <text x="450" y="286" text-anchor="middle" font-weight="600" font-size="12.5">errorHandler</text>
+
+          <line x1="380" y1="304" x2="120" y2="330" stroke="currentColor" stroke-width="1.2" marker-end="url(#ahB)"/>
+          <line x1="450" y1="304" x2="450" y2="330" stroke="currentColor" stroke-width="1.2" marker-end="url(#ahB)"/>
+          <line x1="520" y1="304" x2="780" y2="330" stroke="currentColor" stroke-width="1.2" marker-end="url(#ahB)"/>
+
+          <text x="40" y="346" font-size="10.5" font-family="IBM Plex Mono, monospace" fill="var(--ink-soft)">headersSent → next(err)</text>
+          <text x="450" y="346" text-anchor="middle" font-size="10.5" font-family="IBM Plex Mono, monospace" fill="var(--ink-soft)">CastError → 400</text>
+          <text x="780" y="346" text-anchor="end" font-size="10.5" font-family="IBM Plex Mono, monospace" fill="var(--ink-soft)">else → status ?? 500 (+log)</text>
+        </svg>
+        <figcaption>Two independent failure paths in <code>shared/error.ts</code>. Notice <code>errorHandler</code> checks <code>res.headersSent</code> first — <code>requestTimeout</code> can end a response while a slow query is still running, and writing headers twice throws <code>ERR_HTTP_HEADERS_SENT</code>.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 03 MODULE MAP -->
+    <section id="modules" class="sec">
+      <div class="sec-head"><span class="n">03</span><h2>Module Map</h2></div>
+      <p class="sec-intro">Feature-sliced, not layer-sliced: each feature owns its full stack in one folder, five files, same pattern every time.</p>
+      <div class="tree">src/
+├── server.ts              <span class="cm">// bootstrap() → app.listen → graceful shutdown wiring</span>
+├── app.ts                 <span class="cm">// helmet, cors, compression, routers, /health, /api-docs</span>
+├── bootstrap/              <span class="cm">// everything that runs at startup, one concern per file</span>
+│   ├── env.ts              <span class="cm">// zod-validated env</span>
+│   ├── logger.ts            <span class="cm">// winston logger</span>
+│   ├── database.ts          <span class="cm">// mongoose connect/disconnect</span>
+│   ├── redis.ts             <span class="cm">// client + reconnectStrategy, boot never blocks — see §4.1</span>
+│   ├── shutdown.ts          <span class="cm">// uncaughtException/unhandledRejection + SIGINT/SIGTERM</span>
+│   └── index.ts             <span class="cm">// orchestrator — env → logger → database → redis → shutdown</span>
+├── shared/
+│   ├── error.ts             <span class="cm">// httpError, notFound, errorHandler</span>
+│   ├── pagination.ts        <span class="cm">// cursor helpers, MAX_LIMIT=100, DEFAULT_LIMIT=20</span>
+│   ├── timeout.ts           <span class="cm">// requestTimeout middleware</span>
+│   ├── zstd-compression.ts  <span class="cm">// zstd content-negotiation, Node ≥22.15</span>
+│   ├── redisGateway.ts      <span class="cm">// cacheGet/cacheSet/cacheDel — the only door to Redis, see §4.2</span>
+│   └── session.ts           <span class="cm">// session store — Mongo + Redis via the gateway, see §4.2</span>
+├── docs/swagger.ts          <span class="cm">// swagger-jsdoc spec, reads @openapi comments</span>
+├── features/
+│   ├── <span class="hi-p">products/</span>  model · types · validation · controller · router
+│   ├── <span class="hi-c">cart/</span>      <span class="cm">// same 5-file pattern</span>
+│   └── <span class="hi-w">wishlist/</span>  <span class="cm">// same pattern, no PUT — nothing to update</span>
+└── seed/seed-products.ts   <span class="cm">// bulk product seeder, up to 1 crore docs</span></div>
+    </section>
+
+    <!-- 04 REDIS RESILIENCE -->
+    <section id="redis" class="sec">
+      <div class="sec-head"><span class="n">04</span><h2>Bootstrap &amp; Redis Resilience <span class="badge-shipped">Shipped</span></h2></div>
+      <p class="sec-intro">Bug: with no <code>reconnectStrategy</code>, node-redis's default never gives up on a failed connection — so <code>await redisClient.connect()</code> at boot hung forever whenever Redis was down, and <code>app.listen()</code> never ran. Fix has two parts: <strong>boot</strong> is bounded by a timeout so it never waits on Redis, and <strong>every runtime call</strong> goes through one gatekeeper that fails fast to Mongo instead of throwing or hanging.</p>
+
+      <h3 id="redis-boot">4.1 Boot sequence — <code>bootstrap/redis.ts → connectRedis()</code></h3>
+      <figure class="diagram">
+        <svg viewBox="0 0 900 500" role="img" aria-label="connectRedis races the connect attempt against a 3 second timeout. If Redis answers first, boot continues immediately and ready. If the timeout wins, boot continues anyway with Redis marked not ready, while the connect attempt keeps retrying forever in the background with a capped backoff, until it eventually succeeds.">
+          <defs>
+            <marker id="ahH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect x="280" y="14" width="340" height="42" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="450" y="40" text-anchor="middle" font-size="12" font-family="IBM Plex Mono, monospace">server.ts → bootstrap() → connectRedis()</text>
+          <line x1="450" y1="56" x2="450" y2="88" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahH)"/>
+
+          <rect x="280" y="90" width="340" height="42" rx="8" fill="var(--surface-alt)" stroke="var(--accent-auth)"/>
+          <text x="450" y="116" text-anchor="middle" font-size="11.5" font-weight="600">Promise.race( redisClient.connect() , 3s timer )</text>
+
+          <line x1="390" y1="132" x2="225" y2="150" stroke="currentColor" stroke-width="1.3" marker-end="url(#ahH)"/>
+          <text x="300" y="138" text-anchor="middle" font-size="9.5" fill="var(--accent-success)">connect() wins</text>
+          <line x1="510" y1="132" x2="675" y2="150" stroke="currentColor" stroke-width="1.3" marker-end="url(#ahH)"/>
+          <text x="600" y="138" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)">timeout wins</text>
+
+          <line x1="450" y1="150" x2="450" y2="400" stroke="var(--border-strong)" stroke-width="1" stroke-dasharray="2 6"/>
+          <text x="450" y="146" text-anchor="middle" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">vs</text>
+
+          <!-- LEFT: Redis reachable -->
+          <rect x="95" y="150" width="260" height="40" rx="7" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="225" y="175" text-anchor="middle" font-size="11">redisClient 'ready' fires</text>
+          <line x1="225" y1="190" x2="225" y2="216" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahH)"/>
+
+          <rect x="95" y="218" width="260" height="40" rx="7" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="225" y="243" text-anchor="middle" font-size="10.5">connectRedis() resolves — a few ms</text>
+          <line x1="225" y1="258" x2="225" y2="284" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahH)"/>
+
+          <rect x="95" y="286" width="260" height="46" rx="7" fill="var(--surface)" stroke="var(--accent-success)"/>
+          <text x="225" y="305" text-anchor="middle" font-size="11" font-weight="600">app.listen() fires</text>
+          <text x="225" y="321" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)">isReady already true</text>
+
+          <!-- RIGHT: Redis down at boot -->
+          <rect x="545" y="150" width="260" height="40" rx="7" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="675" y="169" text-anchor="middle" font-size="10.5">ECONNREFUSED loop —</text>
+          <text x="675" y="183" text-anchor="middle" font-size="10.5">reconnectStrategy retries</text>
+          <line x1="675" y1="190" x2="675" y2="216" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahH)"/>
+
+          <rect x="545" y="218" width="260" height="40" rx="7" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="675" y="243" text-anchor="middle" font-size="10.5">3s boot timeout wins the race</text>
+          <line x1="675" y1="258" x2="675" y2="284" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahH)"/>
+
+          <rect x="545" y="286" width="260" height="46" rx="7" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="675" y="305" text-anchor="middle" font-size="11" font-weight="600">app.listen() fires anyway</text>
+          <text x="675" y="321" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)">isReady = false (degraded)</text>
+          <line x1="675" y1="332" x2="675" y2="358" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahH)"/>
+
+          <rect x="545" y="360" width="260" height="54" rx="7" fill="var(--code-bg)" stroke="var(--border)"/>
+          <text x="675" y="380" text-anchor="middle" font-size="10" fill="var(--ink-soft)">background: reconnectStrategy keeps</text>
+          <text x="675" y="396" text-anchor="middle" font-size="10" fill="var(--ink-soft)">retrying, capped 200ms→5000ms, never gives up</text>
+          <line x1="675" y1="414" x2="675" y2="436" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahH)"/>
+
+          <rect x="545" y="438" width="260" height="40" rx="7" fill="var(--surface)" stroke="var(--accent-success)"/>
+          <text x="675" y="462" text-anchor="middle" font-size="10.5">'ready' fires later → isReady=true</text>
+
+          <text x="450" y="490" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)">Either path: <tspan font-family="IBM Plex Mono, monospace">app.listen()</tspan> never waits on Redis</text>
+        </svg>
+        <figcaption>The right branch is the fix for the reported bug — previously there was no 3s timer and no <code>reconnectStrategy</code> cap, so <code>connect()</code>'s promise never settled and the whole boot sequence hung. Now the worst case is a fixed 3-second delay, and Redis keeps trying to reconnect for as long as the process runs.</figcaption>
+      </figure>
+
+      <h3 id="redis-gatekeeper">4.2 Runtime gatekeeper — <code>shared/redisGateway.ts</code></h3>
+      <figure class="diagram">
+        <svg viewBox="0 0 900 400" role="img" aria-label="cacheGet, cacheSet and cacheDel all check isReady first, returning a safe default immediately if Redis is not connected. If it is connected, the real Redis call races a 150 millisecond timeout; success returns the value, timeout or error logs a short-circuit warning and falls back to the same safe default. Either way the caller sees the same shape of result and falls through to Mongo.">
+          <defs>
+            <marker id="ahI" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect x="310" y="10" width="280" height="40" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="450" y="35" text-anchor="middle" font-size="11.5" font-family="IBM Plex Mono, monospace">cacheGet / cacheSet / cacheDel</text>
+          <line x1="450" y1="50" x2="450" y2="82" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahI)"/>
+
+          <rect x="310" y="84" width="280" height="42" rx="8" fill="var(--surface-alt)" stroke="var(--accent-auth)"/>
+          <text x="450" y="110" text-anchor="middle" font-size="12" font-weight="600">redisClient.isReady ?</text>
+
+          <line x1="345" y1="126" x2="170" y2="160" stroke="currentColor" stroke-width="1.3" marker-end="url(#ahI)"/>
+          <text x="230" y="147" text-anchor="middle" font-size="9.5" fill="var(--accent-danger)">false</text>
+          <line x1="555" y1="126" x2="650" y2="160" stroke="currentColor" stroke-width="1.3" marker-end="url(#ahI)"/>
+          <text x="620" y="147" text-anchor="middle" font-size="9.5" fill="var(--accent-success)">true</text>
+
+          <rect x="40" y="160" width="260" height="46" rx="7" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="170" y="180" text-anchor="middle" font-size="10.5">skip Redis entirely</text>
+          <text x="170" y="196" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)">return null / no-op — 0ms, no attempt</text>
+
+          <rect x="520" y="160" width="260" height="40" rx="7" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="650" y="183" text-anchor="middle" font-size="10" font-family="IBM Plex Mono, monospace">withTimeout(op, 150ms)</text>
+
+          <rect x="520" y="224" width="260" height="112" rx="8" fill="none" stroke="var(--border-strong)" stroke-dasharray="3 3"/>
+          <rect x="520" y="224" width="36" height="16" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+          <text x="538" y="236" text-anchor="middle" font-size="9" font-family="IBM Plex Mono, monospace">alt</text>
+
+          <text x="534" y="254" font-size="9.5" font-style="italic" fill="var(--accent-success)">[resolves in time]</text>
+          <text x="536" y="272" font-size="10" fill="var(--ink)">→ return the real value</text>
+
+          <line x1="526" y1="288" x2="774" y2="288" stroke="var(--border-strong)" stroke-dasharray="2 4"/>
+
+          <text x="534" y="304" font-size="9.5" font-style="italic" fill="var(--ink-soft)">[timeout or Redis error]</text>
+          <text x="536" y="320" font-size="9.5" fill="var(--ink-soft)">→ logger.warn("short-circuited")</text>
+          <text x="536" y="333" font-size="9.5" fill="var(--ink-soft)">→ return null / no-op (same as left branch)</text>
+
+          <line x1="200" y1="200" x2="200" y2="360" stroke="currentColor" stroke-width="1" stroke-dasharray="2 4"/>
+          <line x1="200" y1="360" x2="420" y2="360" stroke="currentColor" stroke-width="1.3" marker-end="url(#ahI)"/>
+          <line x1="650" y1="336" x2="650" y2="360" stroke="currentColor" stroke-width="1" stroke-dasharray="2 4"/>
+          <line x1="650" y1="360" x2="480" y2="360" stroke="currentColor" stroke-width="1.3" marker-end="url(#ahI)"/>
+
+          <rect x="270" y="364" width="360" height="30" rx="7" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+          <text x="450" y="384" text-anchor="middle" font-size="10.5">Same safe result either way — caller falls through to Mongo</text>
+        </svg>
+        <figcaption>Both failure modes — Redis not connected, and Redis connected but slow/erroring — produce the exact same shape of result. Callers like <code>session.ts</code> never branch on "why" Redis failed; a <code>null</code> from <code>cacheGet</code> is indistinguishable from a genuine cache miss, so the Mongo-fallback code is the same code either way.</figcaption>
+      </figure>
+
+      <h3 id="redis-config">4.3 Config reference</h3>
+      <div class="tbl-wrap" style="margin-bottom:14px;">
+        <table>
+          <thead><tr><th>Setting</th><th>Value</th><th>Where</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>connectTimeout</code></td><td>2000ms</td><td><code>bootstrap/redis.ts</code></td><td>Socket-level cap on a single connect attempt</td></tr>
+            <tr><td><code>reconnectStrategy</code></td><td><code>min(retries·200, 5000)</code>ms, never returns <code>Error</code></td><td><code>bootstrap/redis.ts</code></td><td>Capped backoff that never gives up — this is what makes recovery fully automatic</td></tr>
+            <tr><td><code>disableOfflineQueue</code></td><td><code>true</code></td><td><code>bootstrap/redis.ts</code></td><td>Commands sent while disconnected reject immediately instead of queuing — avoids a reconnect replay storm</td></tr>
+            <tr><td>Boot race timeout</td><td>3000ms</td><td><code>connectRedis()</code></td><td><code>Promise.race</code> cap — bootstrap always proceeds by this point, Redis or not</td></tr>
+            <tr><td><code>CALL_TIMEOUT_MS</code></td><td>150ms</td><td><code>redisGateway.ts</code></td><td>Per-call cap — catches "Redis up but slow", not just "Redis down"</td></tr>
+            <tr><td><code>LOG_EVERY_NTH_ATTEMPT</code></td><td>10</td><td><code>bootstrap/redis.ts</code></td><td>Reconnect log throttling — attempt #1 and every 10th, not every single retry</td></tr>
+            <tr><td><code>GET /ready</code></td><td>Mongo <code>readyState</code> only</td><td><code>app.ts</code></td><td>Redis status is informational in the JSON body — never causes a 503</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="redis-decisions">4.4 Decisions</h3>
+      <div class="decisions">
+        <div class="decision a">
+          <h4>A timeout, not a "give up" strategy</h4>
+          <p><code>reconnectStrategy</code> itself never gives up — it always returns a delay, never <code>Error</code> or <code>false</code>. The thing that's bounded is <em>boot's wait</em> (<code>Promise.race</code> with 3s), which is a completely separate concern from whether Redis keeps trying to come back.</p>
+        </div>
+        <div class="decision a">
+          <h4><code>disableOfflineQueue</code> avoids a replay storm</h4>
+          <p>node-redis's default queues commands while disconnected and fires them all at once on reconnect — a self-inflicted spike right when Redis is fragile after coming back. Rejecting immediately instead means the gatekeeper's <code>isReady</code> check is the only fallback path, and it's always accurate.</p>
+        </div>
+        <div class="decision a">
+          <h4><code>/ready</code> never gates on Redis</h4>
+          <p>If readiness depended on Redis, an outage would make every pod "not ready" at once and an orchestrator would kill them all simultaneously — the opposite of "never unavailable because Redis is down". Redis state is exposed in the JSON for humans/dashboards, not enforced for traffic routing.</p>
+        </div>
+        <div class="decision a">
+          <h4>One gateway, no scattered try/catch</h4>
+          <p><code>session.ts</code> used to wrap every Redis call in its own try/catch with a logged fallback. That's now centralized in <code>redisGateway.ts</code> — feature code never imports <code>redisClient</code> directly, it calls <code>cacheGet/cacheSet/cacheDel</code> and gets a fail-safe result for free.</p>
+        </div>
+        <div class="decision n">
+          <h4>No circuit-breaker library — yet</h4>
+          <p><code>isReady</code> + a per-call timeout already covers "Redis down" and "Redis up but slow" for a single instance. A library (bulkhead, sampling-window trip thresholds) earns its cost once there's real multi-tenant load and noisy-neighbor traffic to isolate — not before.</p>
+        </div>
+      </div>
+    
+    </section>
+
+    <!-- 04 DATA MODEL -->
+    <section id="model" class="sec">
+      <div class="sec-head"><span class="n">05</span><h2>Data Model</h2></div>
+      <p class="sec-intro">Four collections (<code>User</code> and <code>Session</code> are detailed in <a href="#auth-schema">§10.1</a>). <code>CartItem</code> and <code>WishlistItem</code> each hold a compound <code>unique</code> index on <code>{ userId, productId }</code> — that single index is what makes "add" idempotent per user.</p>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 440" role="img" aria-label="Class diagram: Product is referenced by CartItem and WishlistItem, each scoped by userId, via a compound unique userId+productId index.">
+          <defs>
+            <marker id="ahC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10" fill="none" stroke="currentColor" stroke-width="1.3"/>
+            </marker>
+          </defs>
+
+          <!-- Product -->
+          <rect x="320" y="24" width="260" height="176" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <rect x="320" y="24" width="260" height="30" rx="8" fill="var(--accent-products)"/>
+          <rect x="320" y="44" width="260" height="10" fill="var(--accent-products)"/>
+          <text x="450" y="44" text-anchor="middle" fill="white" font-weight="700" font-size="13">Product</text>
+          <line x1="320" y1="54" x2="580" y2="54" stroke="var(--border-strong)"/>
+          <g font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--ink)">
+            <text x="334" y="72">_id: ObjectId</text>
+            <text x="334" y="91">name, description: string</text>
+            <text x="334" y="110">price, stock: number (≥0)</text>
+            <text x="334" y="129">category: string · indexed</text>
+            <text x="334" y="148">imageUrl: string</text>
+            <text x="334" y="167">createdAt, updatedAt</text>
+          </g>
+
+          <!-- CartItem -->
+          <rect x="50" y="270" width="260" height="145" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <rect x="50" y="270" width="260" height="30" rx="8" fill="var(--accent-cart)"/>
+          <rect x="50" y="290" width="260" height="10" fill="var(--accent-cart)"/>
+          <text x="180" y="290" text-anchor="middle" fill="white" font-weight="700" font-size="13">CartItem</text>
+          <line x1="50" y1="300" x2="310" y2="300" stroke="var(--border-strong)"/>
+          <g font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--ink)">
+            <text x="64" y="318">_id: ObjectId</text>
+            <text x="64" y="337">userId: ObjectId · ref User</text>
+            <text x="64" y="356">productId: ObjectId · ref Product</text>
+            <text x="64" y="375">qty: number (≥1)</text>
+            <text x="64" y="394">createdAt, updatedAt</text>
+          </g>
+
+          <!-- WishlistItem -->
+          <rect x="590" y="270" width="260" height="120" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <rect x="590" y="270" width="260" height="30" rx="8" fill="var(--accent-wishlist)"/>
+          <rect x="590" y="290" width="260" height="10" fill="var(--accent-wishlist)"/>
+          <text x="720" y="290" text-anchor="middle" fill="white" font-weight="700" font-size="13">WishlistItem</text>
+          <line x1="590" y1="300" x2="850" y2="300" stroke="var(--border-strong)"/>
+          <g font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--ink)">
+            <text x="604" y="318">_id: ObjectId</text>
+            <text x="604" y="337">userId: ObjectId · ref User</text>
+            <text x="604" y="356">productId: ObjectId · ref Product</text>
+            <text x="604" y="375">createdAt, updatedAt</text>
+          </g>
+
+          <!-- associations -->
+          <line x1="200" y1="270" x2="400" y2="200" stroke="var(--accent-cart)" stroke-width="1.5" marker-end="url(#ahC)"/>
+          <text x="205" y="252" font-size="11" fill="var(--accent-cart)" font-family="IBM Plex Mono, monospace">{ userId, productId }</text>
+          <text x="205" y="266" font-size="10" fill="var(--ink-faint)" font-style="italic">1 line per user per product — increment, not duplicate</text>
+
+          <line x1="700" y1="270" x2="510" y2="200" stroke="var(--accent-wishlist)" stroke-width="1.5" marker-end="url(#ahC)"/>
+          <text x="595" y="252" font-size="11" fill="var(--accent-wishlist)" font-family="IBM Plex Mono, monospace">{ userId, productId }</text>
+          <text x="595" y="266" font-size="10" fill="var(--ink-faint)" font-style="italic">409 on duplicate (compound unique index + code 11000)</text>
+        </svg>
+        <figcaption>Hollow arrowheads mark a Mongoose <code>ref</code> association (resolved via <code>.populate("productId")</code>), not a real foreign key — MongoDB doesn't enforce referential integrity, only the uniqueness of the <code>{ userId, productId }</code> pair.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 05 API SURFACE -->
+    <section id="api" class="sec">
+      <div class="sec-head"><span class="n">06</span><h2>API Surface</h2></div>
+      <p class="sec-intro">Every list endpoint is cursor-paginated: <code>?cursor=&lt;last _id&gt;&limit=&lt;n&gt;</code>, limit clamped to 100 (default 20). Mechanics in <a href="#cursor">§08</a>. <span class="auth-tag">AUTH</span> = requires <code>Authorization: Bearer &lt;accessToken&gt;</code> — see <a href="#auth">§10</a>.</p>
+
+      <div class="tbl-wrap" style="margin-bottom:14px;">
+        <table>
+          <thead><tr><th>Users <span class="mono" style="text-transform:none;">/users</span></th><th>Body / Query</th><th>Response</th></tr></thead>
+          <tbody>
+            <tr><td><code>POST /signup</code></td><td><code>{ name, email, password, gender?, bio? }</code></td><td><span class="status-2">201</span> / <span class="status-4">400 · 409</span></td></tr>
+            <tr><td><code>POST /login</code></td><td><code>{ email, password }</code></td><td><span class="status-2">200</span> / <span class="status-4">401</span></td></tr>
+            <tr><td><code>POST /refresh</code></td><td><code>{ refreshToken }</code></td><td><span class="status-2">200</span> / <span class="status-4">400 · 401</span></td></tr>
+            <tr><td><span class="auth-tag">AUTH</span><code>GET /me</code></td><td>—</td><td><span class="status-2">200</span> / <span class="status-4">401</span></td></tr>
+            <tr><td><span class="auth-tag">AUTH</span><code>PUT /me</code></td><td><code>{ name?, gender?, bio?, isActive? }</code></td><td><span class="status-2">200</span> / <span class="status-4">400 · 401</span></td></tr>
+            <tr><td><span class="auth-tag">AUTH</span><code>POST /logout</code></td><td>—</td><td><span class="status-2">200</span> / <span class="status-4">401</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tbl-wrap" style="margin-bottom:14px;">
+        <table>
+          <thead><tr><th>Products <span class="mono" style="text-transform:none;">/products</span></th><th>Body / Query</th><th>Response</th></tr></thead>
+          <tbody>
+            <tr><td><code>GET /</code></td><td><code>?cursor&limit&category</code></td><td><span class="status-2">200</span></td></tr>
+            <tr><td><code>GET /:id</code></td><td>—</td><td><span class="status-2">200</span> / <span class="status-4">404</span></td></tr>
+            <tr><td><code>POST /</code></td><td><code>{ name, description, price, stock, category, imageUrl }</code></td><td><span class="status-2">201</span> / <span class="status-4">400</span></td></tr>
+            <tr><td><code>PUT /:id</code></td><td>any subset of the above</td><td><span class="status-2">200</span> / <span class="status-4">400 · 404</span></td></tr>
+            <tr><td><code>DELETE /:id</code></td><td>—</td><td><span class="status-2">200</span> / <span class="status-4">404</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tbl-wrap" style="margin-bottom:14px;">
+        <table>
+          <thead><tr><th>Cart <span class="mono" style="text-transform:none;">/cart</span> — all <span class="auth-tag">AUTH</span></th><th>Body / Query</th><th>Response</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><code>GET /</code></td><td><code>?cursor&limit</code></td><td><span class="status-2">200</span></td><td>Returns <code>{ items, nextCursor, total }</code>, scoped to the caller's own cart — <code>total</code> is the whole cart's value via aggregation, not just the page</td></tr>
+            <tr><td><code>GET /:id</code></td><td>—</td><td><span class="status-2">200</span> / <span class="status-4">404</span></td><td></td></tr>
+            <tr><td><code>POST /</code></td><td><code>{ productId, qty }</code></td><td><span class="status-2">200 · 201</span> / <span class="status-4">400</span></td><td>Atomic upsert+<code>$inc</code> — existing <code>productId</code> increments, no duplicate line</td></tr>
+            <tr><td><code>PATCH /:id/quantity</code></td><td><code>{ delta }</code></td><td><span class="status-2">200</span> / <span class="status-4">400 · 404</span></td><td>Signed delta, +/- ; decrementing to ≤0 removes the line</td></tr>
+            <tr><td><code>PUT /:id</code></td><td><code>{ qty }</code></td><td><span class="status-2">200</span> / <span class="status-4">400 · 404</span></td><td>Absolute set</td></tr>
+            <tr><td><code>DELETE /:id</code></td><td>—</td><td><span class="status-2">200</span> / <span class="status-4">404</span></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Wishlist <span class="mono" style="text-transform:none;">/wishlist</span> — all <span class="auth-tag">AUTH</span></th><th>Body / Query</th><th>Response</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><code>GET /</code></td><td><code>?cursor&limit</code></td><td><span class="status-2">200</span></td><td>Scoped to the caller's own wishlist</td></tr>
+            <tr><td><code>GET /:id</code></td><td>—</td><td><span class="status-2">200</span> / <span class="status-4">404</span></td><td></td></tr>
+            <tr><td><code>POST /</code></td><td><code>{ productId }</code></td><td><span class="status-2">201</span> / <span class="status-4">409</span></td><td><span class="status-4">409</span> if already wishlisted — no PUT, nothing to update</td></tr>
+            <tr><td><code>DELETE /:id</code></td><td>—</td><td><span class="status-2">200</span> / <span class="status-4">404</span></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 06 SEQUENCE FLOWS -->
+    <section id="sequence" class="sec">
+      <div class="sec-head"><span class="n">07</span><h2>Sequence Flows — Add to Cart vs. Add to Wishlist</h2></div>
+      <p class="sec-intro">Both are a <code>POST .../</code> that must not duplicate a line for the same product — but they get there differently. Cart has a number to accumulate (<code>qty</code>), so a single atomic upsert handles "new" and "already there" in one DB call. Wishlist has no number to accumulate — it's a pure yes/no — so it writes and lets the unique index reject the duplicate.</p>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 420" role="img" aria-label="Sequence diagram comparing POST /cart, which does a single atomic upsert with $inc, against POST /wishlist, which writes directly and catches a duplicate-key error from MongoDB.">
+          <defs>
+            <marker id="ahD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <line x1="450" y1="8" x2="450" y2="412" stroke="var(--border-strong)" stroke-width="1" stroke-dasharray="2 6"/>
+          <text x="450" y="6" text-anchor="middle" font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">vs</text>
+
+          <!-- LEFT: Cart -->
+          <g>
+            <rect x="60" y="8" width="80" height="26" rx="6" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <text x="100" y="25" text-anchor="middle" font-size="11" font-weight="600">Client</text>
+            <rect x="165" y="8" width="130" height="26" rx="6" fill="var(--surface)" stroke="var(--accent-cart)"/>
+            <text x="230" y="25" text-anchor="middle" font-size="10.5" font-weight="600">cart.controller</text>
+            <rect x="320" y="8" width="90" height="26" rx="6" fill="var(--surface)" stroke="var(--accent-cart)"/>
+            <text x="365" y="25" text-anchor="middle" font-size="10.5" font-weight="600">CartItem</text>
+
+            <line x1="100" y1="34" x2="100" y2="400" stroke="var(--border-strong)" stroke-dasharray="2 4"/>
+            <line x1="230" y1="34" x2="230" y2="400" stroke="var(--border-strong)" stroke-dasharray="2 4"/>
+            <line x1="365" y1="34" x2="365" y2="400" stroke="var(--border-strong)" stroke-dasharray="2 4"/>
+
+            <line x1="100" y1="60" x2="230" y2="60" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahD)"/>
+            <text x="102" y="54" font-size="9.5" font-family="IBM Plex Mono, monospace">POST /cart {productId, qty}</text>
+
+            <line x1="230" y1="90" x2="365" y2="90" stroke="currentColor" stroke-width="1" marker-end="url(#ahD)"/>
+            <text x="232" y="84" font-size="9" font-family="IBM Plex Mono, monospace" fill="var(--ink-faint)">exists({userId,productId})?</text>
+            <line x1="365" y1="108" x2="230" y2="108" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#ahD)"/>
+            <text x="360" y="104" text-anchor="end" font-size="9" fill="var(--ink-faint)">→ true/false (status code only)</text>
+
+            <line x1="230" y1="140" x2="365" y2="140" stroke="var(--accent-cart)" stroke-width="2" marker-end="url(#ahD)"/>
+            <text x="232" y="134" font-size="9.5" font-family="IBM Plex Mono, monospace" fill="var(--accent-cart)">findOneAndUpdate($inc qty, upsert:true)</text>
+            <line x1="365" y1="163" x2="230" y2="163" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#ahD)"/>
+            <text x="360" y="159" text-anchor="end" font-size="9.5" fill="var(--accent-success)">→ item (created or incremented)</text>
+
+            <text x="100" y="200" font-size="9.5" font-style="italic" fill="var(--ink-soft)">One atomic call handles both cases — no</text>
+            <text x="100" y="216" font-size="9.5" font-style="italic" fill="var(--ink-soft)">branch, no lost-update race under</text>
+            <text x="100" y="232" font-size="9.5" font-style="italic" fill="var(--ink-soft)">concurrent requests for the same line.</text>
+
+            <line x1="230" y1="340" x2="100" y2="340" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahD)"/>
+            <text x="105" y="334" font-size="9.5" font-family="IBM Plex Mono, monospace">200 (existed) / 201 (new) + item JSON</text>
+          </g>
+
+          <!-- RIGHT: Wishlist -->
+          <g>
+            <rect x="500" y="8" width="80" height="26" rx="6" fill="var(--surface)" stroke="var(--border-strong)"/>
+            <text x="540" y="25" text-anchor="middle" font-size="11" font-weight="600">Client</text>
+            <rect x="600" y="8" width="150" height="26" rx="6" fill="var(--surface)" stroke="var(--accent-wishlist)"/>
+            <text x="675" y="25" text-anchor="middle" font-size="10.5" font-weight="600">wishlist.controller</text>
+            <rect x="775" y="8" width="115" height="26" rx="6" fill="var(--surface)" stroke="var(--accent-wishlist)"/>
+            <text x="832" y="25" text-anchor="middle" font-size="10.5" font-weight="600">WishlistItem</text>
+
+            <line x1="540" y1="34" x2="540" y2="400" stroke="var(--border-strong)" stroke-dasharray="2 4"/>
+            <line x1="675" y1="34" x2="675" y2="400" stroke="var(--border-strong)" stroke-dasharray="2 4"/>
+            <line x1="832" y1="34" x2="832" y2="400" stroke="var(--border-strong)" stroke-dasharray="2 4"/>
+
+            <line x1="540" y1="60" x2="675" y2="60" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahD)"/>
+            <text x="542" y="54" font-size="9.5" font-family="IBM Plex Mono, monospace">POST /wishlist {productId}</text>
+
+            <line x1="675" y1="90" x2="832" y2="90" stroke="var(--accent-wishlist)" stroke-width="2" marker-end="url(#ahD)"/>
+            <text x="677" y="84" font-size="9.5" font-family="IBM Plex Mono, monospace" fill="var(--accent-wishlist)">create(payload) — no pre-check</text>
+
+            <rect x="515" y="112" width="330" height="196" rx="6" fill="none" stroke="var(--border-strong)" stroke-dasharray="3 3"/>
+            <rect x="515" y="112" width="34" height="16" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+            <text x="532" y="124" text-anchor="middle" font-size="9" font-family="IBM Plex Mono, monospace">alt</text>
+
+            <text x="525" y="140" font-size="9.5" font-style="italic" fill="var(--ink-soft)">[success]</text>
+            <line x1="832" y1="160" x2="675" y2="160" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#ahD)"/>
+            <text x="828" y="156" text-anchor="end" font-size="9.5" fill="var(--accent-success)">→ 201 Created</text>
+
+            <line x1="521" y1="176" x2="839" y2="176" stroke="var(--border-strong)" stroke-dasharray="2 4"/>
+            <text x="525" y="194" font-size="9.5" font-style="italic" fill="var(--ink-soft)">[duplicate — code 11000]</text>
+            <line x1="832" y1="216" x2="675" y2="216" stroke="var(--accent-danger)" stroke-width="1.6" stroke-dasharray="3 3" marker-end="url(#ahD)"/>
+            <text x="828" y="212" text-anchor="end" font-size="9.5" fill="var(--accent-danger)">→ MongoServerError 11000</text>
+            <text x="677" y="240" font-size="9.5" fill="var(--ink-soft)">• throw httpError(409, "already in wishlist")</text>
+
+            <line x1="675" y1="340" x2="540" y2="340" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahD)"/>
+            <text x="545" y="334" font-size="9.5" font-family="IBM Plex Mono, monospace">201 item JSON / 409 {error}</text>
+          </g>
+        </svg>
+        <figcaption>The bold arrow on each side is where the real work happens. Cart has a quantity to accumulate, so the DB's own <code>$inc</code>+upsert does the "new or existing" decision atomically — the thin <code>exists()</code> check above it only picks the HTTP status code, and is best-effort under a race (harmless either way, since the upsert itself is always correct). Wishlist has nothing to accumulate, only a duplicate to reject, so it commits to <code>create()</code> and lets the unique index throw.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 07 CURSOR PAGINATION -->
+    <section id="cursor" class="sec">
+      <div class="sec-head"><span class="n">08</span><h2>Cursor Pagination</h2></div>
+      <p class="sec-intro">Every list endpoint sorts by <code>_id</code> ascending — a MongoDB ObjectId is monotonically increasing, so it's a stable, index-friendly cursor for free.</p>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 190" role="img" aria-label="Ten documents sorted by ascending ObjectId, split into two pages of five; the last id of page one becomes the cursor query parameter for page two.">
+          <defs>
+            <marker id="ahE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <rect x="308" y="12" width="150" height="24" rx="5" fill="var(--surface-alt)" stroke="var(--accent-products)"/>
+          <text x="383" y="28" text-anchor="middle" font-size="9.5" font-family="IBM Plex Mono, monospace">nextCursor = _id₅</text>
+          <line x1="383" y1="36" x2="383" y2="58" stroke="var(--accent-products)" stroke-width="1.4" marker-end="url(#ahE)"/>
+
+          <g font-family="IBM Plex Mono, monospace">
+            <circle cx="60"  cy="70" r="10" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+            <circle cx="142" cy="70" r="10" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+            <circle cx="224" cy="70" r="10" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+            <circle cx="306" cy="70" r="10" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+            <circle cx="388" cy="70" r="10" fill="var(--accent-products)" stroke="var(--accent-products)"/>
+            <circle cx="470" cy="70" r="10" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+            <circle cx="552" cy="70" r="10" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+            <circle cx="634" cy="70" r="10" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+            <circle cx="716" cy="70" r="10" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+            <circle cx="798" cy="70" r="10" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+            <g font-size="8.5" fill="var(--ink-faint)">
+              <text x="60"  y="98" text-anchor="middle">…a1f0</text>
+              <text x="142" y="98" text-anchor="middle">…a1f1</text>
+              <text x="224" y="98" text-anchor="middle">…a1f2</text>
+              <text x="306" y="98" text-anchor="middle">…a1f3</text>
+              <text x="388" y="98" text-anchor="middle" font-weight="700">…a1f4</text>
+              <text x="470" y="98" text-anchor="middle">…a1f5</text>
+              <text x="552" y="98" text-anchor="middle">…a1f6</text>
+              <text x="634" y="98" text-anchor="middle">…a1f7</text>
+              <text x="716" y="98" text-anchor="middle">…a1f8</text>
+              <text x="798" y="98" text-anchor="middle">…a1f9</text>
+            </g>
+          </g>
+
+          <path d="M50,118 L50,124 L398,124 L398,118" fill="none" stroke="var(--ink-faint)"/>
+          <text x="224" y="142" text-anchor="middle" font-size="11">page 1 · limit = 5</text>
+
+          <path d="M460,118 L460,124 L808,124 L808,118" fill="none" stroke="var(--ink-faint)"/>
+          <text x="634" y="142" text-anchor="middle" font-size="11">page 2 · filter: _id &gt; cursor</text>
+          <text x="634" y="160" text-anchor="middle" font-size="9.5" font-family="IBM Plex Mono, monospace" fill="var(--ink-faint)">?cursor=a1f4&amp;limit=5</text>
+        </svg>
+        <figcaption>The 5th document's <code>_id</code> from page 1 is handed back as <code>nextCursor</code>; the client replays it as <code>?cursor=</code> and the query becomes <code>{ _id: { $gt: cursor } }</code> — no <code>OFFSET</code>, no re-scanning skipped rows, cost stays O(limit) at any depth.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 08 MIDDLEWARE -->
+    <section id="middleware" class="sec">
+      <div class="sec-head"><span class="n">09</span><h2>Middleware Pipeline</h2></div>
+      <p class="sec-intro">Order is the design here — this table's row order <em>is</em> <code>app.ts</code>'s <code>app.use()</code> order.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Middleware</th><th>File</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><code>helmet()</code></td><td>—</td><td>Security response headers</td></tr>
+            <tr><td>2</td><td><code>cors()</code></td><td>—</td><td>Cross-origin access</td></tr>
+            <tr><td>3</td><td><code>zstdCompression</code></td><td><code>shared/zstd-compression.ts</code></td><td>zstd encoding on Node ≥22.15; falls through otherwise</td></tr>
+            <tr><td>4</td><td><code>compression()</code></td><td>—</td><td>gzip / brotli fallback for everyone else</td></tr>
+            <tr><td>5</td><td><code>express.json()</code></td><td>—</td><td>JSON body parsing</td></tr>
+            <tr><td>6</td><td><code>requestTimeout</code></td><td><code>shared/timeout.ts</code></td><td>Aborts requests stuck too long</td></tr>
+            <tr><td>7</td><td>http logger</td><td><code>app.ts</code></td><td><code>res.on("finish")</code> → one access-log line per request</td></tr>
+            <tr><td>8</td><td><code>notFound</code></td><td><code>shared/error.ts</code></td><td>Runs after all routers — unmatched path → 404</td></tr>
+            <tr><td>9</td><td><code>errorHandler</code></td><td><code>shared/error.ts</code></td><td>Last in chain — catches every thrown error</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="superseded" style="margin-top:10px;">Not in this table: <code>requireAuth</code> (<a href="#auth-middleware">§10.4</a>) isn't global — it's <code>router.use()</code>'d inside <code>cart.router.ts</code>, <code>wishlist.router.ts</code>, and the protected half of <code>users.router.ts</code>, not in <code>app.ts</code>'s chain above. <code>products.router.ts</code> never sees it.</p>
+    </section>
+
+    <!-- 09 USERS & AUTH -->
+    <section id="auth" class="sec">
+      <div class="sec-head"><span class="n">10</span><h2>Users &amp; Auth <span class="badge-shipped">Shipped</span></h2></div>
+      <p class="sec-intro">Signup, login, own-profile read/update, JWT access + refresh tokens, and a revocable session store that finally puts the idle Redis client (<a href="#redis">§04</a>) to work. Cart and Wishlist are now auth-gated and per-user; Products stays exactly as it was.</p>
+
+      <h3 id="auth-schema">10.1 Schema</h3>
+      <div class="tbl-wrap" style="margin-bottom:14px;">
+        <table>
+          <thead><tr><th>User</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><code>name</code></td><td>string, required</td><td></td></tr>
+            <tr><td><code>email</code></td><td>string, required, unique</td><td>lowercase + trim on save, indexed — login identifier</td></tr>
+            <tr><td><code>passwordHash</code></td><td>string, required</td><td><code>select:false</code> — never returned unless explicitly <code>.select("+passwordHash")</code></td></tr>
+            <tr><td><code>isActive</code></td><td>boolean, default <code>true</code></td><td><code>false</code> → login rejected + every existing session killed, see §10.5</td></tr>
+            <tr><td><code>gender</code></td><td>enum, optional</td><td><code>male · female · other · prefer_not_to_say</code></td></tr>
+            <tr><td><code>bio</code></td><td>string, optional</td><td>maxlength 300</td></tr>
+            <tr><td><code>createdAt/updatedAt</code></td><td>timestamps</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Session</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><code>_id</code></td><td>string</td><td>the <code>jti</code> itself — <code>crypto.randomUUID()</code>, no <code>uuid</code> package needed</td></tr>
+            <tr><td><code>userId</code></td><td>ObjectId, indexed</td><td>lets <code>revokeAllSessions(userId)</code> find every session for a user</td></tr>
+            <tr><td><code>expiresAt</code></td><td>Date</td><td>TTL index (<code>expireAfterSeconds:0</code>) — Mongo auto-deletes, no cleanup job</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="auth-routes">10.2 Routes</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>Path</th><th>Auth?</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><code>POST</code></td><td><code>/users/signup</code></td><td>❌</td><td>hash password → create → issue tokens · <span class="status-2">201</span></td></tr>
+            <tr><td><code>POST</code></td><td><code>/users/login</code></td><td>❌</td><td>verify password → issue tokens · <span class="status-2">200</span> / <span class="status-4">401</span> bad creds or inactive</td></tr>
+            <tr><td><code>POST</code></td><td><code>/users/refresh</code></td><td>❌ (refresh token is the credential)</td><td>verify refresh + session → new access token</td></tr>
+            <tr><td><code>POST</code></td><td><code>/users/logout</code></td><td>✅</td><td><code>revokeSession(req.user.jti)</code> — kills this session's access + refresh both</td></tr>
+            <tr><td><code>GET</code></td><td><code>/users/me</code></td><td>✅</td><td>own profile, via <code>req.user.id</code></td></tr>
+            <tr><td><code>PUT</code></td><td><code>/users/me</code></td><td>✅</td><td><code>name / gender / bio</code>, plus <code>isActive:false</code> (self-deactivate only — reactivation is out of scope)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="superseded" style="margin-top:10px;">Note on 10.2: public routes (signup/login/refresh) are declared before <code>router.use(requireAuth)</code> in <code>users.router.ts</code> — Express only applies <code>.use()</code> to routes registered after it in the same router, so this ordering is what keeps them public.</p>
+
+      <h3 id="auth-cart-wishlist">10.3 Cart &amp; Wishlist — userId scoping + atomic quantity</h3>
+      <div class="tbl-wrap" style="margin-bottom:14px;">
+        <table>
+          <thead><tr><th>Collection</th><th>Before</th><th>After (shipped)</th></tr></thead>
+          <tbody>
+            <tr><td>CartItem</td><td>unique <code>{ productId }</code> — one shared cart, global</td><td>+ <code>userId</code> (required) · unique <code>{ userId, productId }</code></td></tr>
+            <tr><td>WishlistItem</td><td>unique <code>{ productId }</code> — one shared wishlist, global</td><td>+ <code>userId</code> (required) · unique <code>{ userId, productId }</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="notelist">
+        <li><strong>Add (<code>POST /cart</code>)</strong> becomes one atomic call: <code>findOneAndUpdate({userId,productId}, {$inc:{qty}}, {upsert:true})</code> — replaces the current findOne-then-save/create dance, and removes its lost-update race under concurrent requests.</li>
+        <li><strong>New — <code>PATCH /cart/:id/quantity { delta }</code></strong>, one endpoint for both directions (kept single, as agreed):
+          <ul style="margin-top:6px;">
+            <li><code>delta &gt; 0</code> → <code>findOneAndUpdate({_id,userId}, {$inc:{qty:delta}})</code></li>
+            <li><code>delta &lt; 0</code> → guarded: <code>findOneAndUpdate({_id,userId,qty:{$gt:-delta}}, {$inc:{qty:delta}})</code> — qty can never go negative in the DB</li>
+            <li>guarded update returns <code>null</code> (qty ≤ decrement amount) → line is removed entirely via <code>findOneAndDelete</code></li>
+            <li>no Mongo transaction needed — a single-document <code>$inc</code> is already atomic, so concurrent decrements can't corrupt qty</li>
+          </ul>
+        </li>
+        <li><code>PUT /cart/:id</code> (absolute set) and <code>DELETE /cart/:id</code> stay as-is, just scoped by <code>userId</code> now.</li>
+      </ul>
+
+      <h3 id="auth-middleware">10.4 Auth middleware — request flow</h3>
+      <figure class="diagram">
+        <svg viewBox="0 0 900 560" role="img" aria-label="requireAuth verifies the JWT locally, then checks session validity in Redis first and Mongo only on a miss, before attaching req.user and calling next; any failure funnels into a shared 401 response.">
+          <defs>
+            <marker id="ahF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect x="320" y="16" width="260" height="44" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="450" y="34" text-anchor="middle" font-size="12.5" font-weight="600">Client</text>
+          <text x="450" y="50" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">Authorization: Bearer &lt;token&gt;</text>
+          <line x1="450" y1="60" x2="450" y2="92" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahF)"/>
+
+          <rect x="270" y="94" width="360" height="54" rx="8" fill="var(--surface)" stroke="var(--accent-auth)"/>
+          <circle cx="286" cy="110" r="8" fill="none" stroke="var(--ink-faint)"/><text x="286" y="113.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">1</text>
+          <text x="450" y="118" text-anchor="middle" font-size="12" font-weight="600">requireAuth</text>
+          <text x="450" y="135" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">jwt.verify(token) — signature + exp</text>
+          <line x1="450" y1="148" x2="450" y2="182" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahF)"/>
+          <text x="462" y="170" font-size="9.5" fill="var(--ink-faint)">valid → { sub, jti, type: 'access' }</text>
+
+          <rect x="270" y="184" width="360" height="54" rx="8" fill="var(--surface)" stroke="var(--accent-auth)"/>
+          <circle cx="286" cy="200" r="8" fill="none" stroke="var(--ink-faint)"/><text x="286" y="203.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">2</text>
+          <text x="450" y="208" text-anchor="middle" font-size="12" font-weight="600">isSessionValid(jti)</text>
+          <text x="450" y="225" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">shared/session.ts</text>
+
+          <line x1="450" y1="238" x2="450" y2="254" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="450" y1="254" x2="230" y2="254" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="230" y1="254" x2="230" y2="270" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahF)"/>
+          <text x="305" y="248" font-size="9.5" fill="var(--ink-faint)">check</text>
+
+          <rect x="90" y="272" width="280" height="52" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="230" y="293" text-anchor="middle" font-size="11.5" font-weight="600">cacheGet — session:&lt;jti&gt;</text>
+          <text x="230" y="310" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)">gatekeeper: isReady? + 150ms cap — see §4.2</text>
+
+          <rect x="530" y="272" width="280" height="52" rx="8" fill="var(--surface)" stroke="var(--border-strong)" stroke-dasharray="4 3"/>
+          <text x="670" y="293" text-anchor="middle" font-size="11.5" font-weight="600">Mongo — Session.findOne</text>
+          <text x="670" y="310" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)">fallback — Redis miss / error</text>
+
+          <line x1="370" y1="298" x2="530" y2="298" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahF)"/>
+          <text x="378" y="292" font-size="9.5" fill="var(--ink-faint)">miss / error</text>
+
+          <line x1="230" y1="324" x2="230" y2="380" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="670" y1="324" x2="670" y2="380" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="230" y1="380" x2="670" y2="380" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="450" y1="380" x2="450" y2="398" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahF)"/>
+          <text x="236" y="342" font-size="9.5" fill="var(--accent-success)">hit</text>
+          <text x="500" y="342" font-size="9.5" fill="var(--accent-success)">found → backfill Redis</text>
+
+          <rect x="290" y="400" width="320" height="46" rx="8" fill="var(--surface-alt)" stroke="var(--border-strong)"/>
+          <circle cx="306" cy="416" r="8" fill="none" stroke="var(--ink-faint)"/><text x="306" y="419.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">3</text>
+          <text x="450" y="428" text-anchor="middle" font-size="11.5" font-family="IBM Plex Mono, monospace">attach req.user = { id, jti }</text>
+
+          <line x1="450" y1="446" x2="450" y2="478" stroke="currentColor" stroke-width="1.5" marker-end="url(#ahF)"/>
+          <rect x="250" y="480" width="400" height="46" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <circle cx="266" cy="496" r="8" fill="none" stroke="var(--ink-faint)"/><text x="266" y="499.5" text-anchor="middle" font-size="8.5" fill="var(--ink-faint)">4</text>
+          <text x="450" y="508" text-anchor="middle" font-size="11.5" font-family="IBM Plex Mono, monospace">next() → cart / wishlist controller</text>
+
+          <line x1="630" y1="121" x2="785" y2="121" stroke="var(--accent-danger)" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <line x1="785" y1="121" x2="785" y2="298" stroke="var(--accent-danger)" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <line x1="810" y1="298" x2="785" y2="298" stroke="var(--accent-danger)" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <line x1="785" y1="298" x2="785" y2="478" stroke="var(--accent-danger)" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#ahF)"/>
+          <text x="793" y="115" font-size="9.5" fill="var(--accent-danger)">invalid / expired</text>
+          <text x="705" y="292" text-anchor="start" font-size="9.5" fill="var(--accent-danger)">not found → revoked</text>
+
+          <rect x="700" y="480" width="170" height="46" rx="8" fill="var(--surface-alt)" stroke="var(--accent-danger)"/>
+          <text x="785" y="500" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--accent-danger)">401 Unauthorized</text>
+          <text x="785" y="516" text-anchor="middle" font-size="9" fill="var(--ink-faint)">invalid · expired · revoked</text>
+        </svg>
+        <figcaption>Every protected request pays for two checks: JWT signature+expiry (local, free) then session validity (Redis first, Mongo only on a miss). Both failure points — bad token or a killed session — funnel into the same 401. <code>cacheGet</code> is the gatekeeper wrapper, not a raw Redis call — when Redis is down or slow it returns <code>null</code> immediately instead of throwing or hanging, so this box behaves exactly like a cache miss and every request still lands on Mongo. Full mechanics in <a href="#redis-gatekeeper">§4.2</a>.</figcaption>
+      </figure>
+
+      <h3 id="auth-session-lifecycle">10.5 Session lifecycle — who writes to the store</h3>
+      <figure class="diagram">
+        <svg viewBox="0 0 900 340" role="img" aria-label="Login creates a session record shared by access and refresh tokens; logout revokes just that one session; deactivating a user revokes every session belonging to them.">
+          <defs>
+            <marker id="ahG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect x="330" y="150" width="240" height="80" rx="8" fill="var(--surface)" stroke="var(--accent-auth)" stroke-width="1.5"/>
+          <text x="450" y="176" text-anchor="middle" font-size="12.5" font-weight="600">Session Store</text>
+          <text x="450" y="194" text-anchor="middle" font-size="9" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">Mongo: { _id: jti, userId, expiresAt }</text>
+          <text x="450" y="209" text-anchor="middle" font-size="9" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">Redis (via gatekeeper): session:&lt;jti&gt; → userId (EX ttl)</text>
+
+          <rect x="40" y="30" width="260" height="54" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="170" y="52" text-anchor="middle" font-size="11.5" font-weight="600">POST /users/login · /signup</text>
+          <text x="170" y="68" text-anchor="middle" font-size="9" fill="var(--ink-faint)">issues access + refresh</text>
+          <line x1="300" y1="57" x2="365" y2="57" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="365" y1="57" x2="365" y2="148" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahG)"/>
+          <text x="305" y="51" font-size="9.5" fill="var(--ink-faint)">createSession(userId) → jti</text>
+
+          <rect x="40" y="266" width="260" height="54" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="170" y="288" text-anchor="middle" font-size="11.5" font-weight="600">POST /users/logout</text>
+          <text x="170" y="304" text-anchor="middle" font-size="9" fill="var(--ink-faint)">this device / session only</text>
+          <line x1="300" y1="293" x2="365" y2="293" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="365" y1="293" x2="365" y2="232" stroke="currentColor" stroke-width="1.4" marker-end="url(#ahG)"/>
+          <text x="305" y="287" font-size="9.5" fill="var(--ink-faint)">revokeSession(jti) — kills access + refresh both</text>
+
+          <rect x="600" y="150" width="260" height="80" rx="8" fill="var(--surface)" stroke="var(--border-strong)"/>
+          <text x="730" y="184" text-anchor="middle" font-size="11.5" font-weight="600">PUT /users/me</text>
+          <text x="730" y="200" text-anchor="middle" font-size="9" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">{ isActive: false }</text>
+          <line x1="600" y1="190" x2="570" y2="190" stroke="var(--accent-danger)" stroke-width="1.6" marker-end="url(#ahG)"/>
+          <text x="595" y="178" text-anchor="end" font-size="9.5" fill="var(--accent-danger)">revokeAllSessions(userId) — every session</text>
+
+          <text x="450" y="258" text-anchor="middle" font-size="10" fill="var(--ink-faint)">existence in the store = valid session — TTL (Mongo) + EX (Redis) auto-expire, no cleanup job needed</text>
+        </svg>
+        <figcaption>One record per login, keyed by <code>jti</code>, shared by both tokens — logout deletes exactly that one. Deactivating a user sweeps every session with that <code>userId</code>, however many devices are logged in.</figcaption>
+      </figure>
+
+      <h3 id="auth-decisions">10.6 Decisions</h3>
+      <div class="decisions">
+        <div class="decision a">
+          <h4>One jti, both tokens</h4>
+          <p>Access and refresh share a session id. Revoking it kills both at once — no separate ledger for each token type.</p>
+        </div>
+        <div class="decision a">
+          <h4>Revocable access token — a real trade-off</h4>
+          <p>Every request now pays for a session lookup, not just signature verification — the usual "stateless JWT, no DB hit" benefit is given up on purpose, because a 6h access token needs to die on logout, not just expire.</p>
+        </div>
+        <div class="decision a">
+          <h4>Redis-first, Mongo-fallback, self-healing</h4>
+          <p>Redis errors don't fail the request — they fall through to Mongo, and a Mongo hit gets written back into Redis so the next request is fast again. Session code itself no longer contains any try/catch for this — it calls <code>cacheGet/cacheSet/cacheDel</code> and the fallback is baked into those. Full resilience mechanics in §04.</p>
+        </div>
+        <div class="decision a">
+          <h4>No new dependency for jti</h4>
+          <p><code>crypto.randomUUID()</code> is Node stdlib (available since the project's <code>engines.node &gt;=20</code>) — no <code>uuid</code> package.</p>
+        </div>
+        <div class="decision a">
+          <h4>TTL index over a cleanup cron</h4>
+          <p>Mongo expires stale <code>Session</code> docs on its own; Redis keys carry their own <code>EX</code>. Neither store needs a scheduled sweep.</p>
+        </div>
+        <div class="decision a">
+          <h4>Self-deactivate via PUT /users/me</h4>
+          <p>No admin/roles system exists, so <code>isActive:false</code> is reachable only by the user on themselves, through the existing profile-update route — not a new endpoint. Re-activation is out of scope.</p>
+        </div>
+        <div class="decision a">
+          <h4>No refresh-token rotation — yet</h4>
+          <p>Each refresh reuses the same <code>jti</code> rather than rotating to a new one. Rotation adds theft-detection (reusing an old refresh token signals a stolen one) but needs a token-family chain — skipped for now, add when it's actually needed.</p>
+        </div>
+      </div>
+
+</section>
+
+    <!-- 10 DECISIONS -->
+    <section id="decisions" class="sec">
+      <div class="sec-head"><span class="n">11</span><h2>Design Decisions</h2></div>
+      <p class="sec-intro">Deliberate simplifications, not gaps — what each one costs, and when it'd need revisiting.</p>
+      <div class="decisions">
+        <div class="decision n">
+          <h4>No service layer</h4>
+          <p>Controllers call Mongoose models directly. Three features, no cross-model business rules complex enough to earn an extra layer — one would be an interface written for a single implementation.</p>
+        </div>
+        <div class="decision c">
+          <h4>Cart dedupes by incrementing</h4>
+          <p>Unique index on <code>productId</code> + an app-side <code>findOne</code>-then-branch keeps "one line per product" true without a compound key.</p>
+          <p class="src">"ek product ki ek hi cart line — dobara add hone pe qty badhti hai"</p>
+          <p class="superseded">→ superseded — see §10: findOne-then-save had a lost-update race under concurrent requests, replaced with an atomic $inc upsert</p>
+        </div>
+        <div class="decision w">
+          <h4>Wishlist dedupes by DB index, not a pre-check</h4>
+          <p>No <code>findOne</code> before insert — write, then catch Mongo's duplicate-key error (code 11000) as 409. One round trip instead of two, and race-safe: two parallel adds can't both slip through a check-then-insert gap.</p>
+        </div>
+        <div class="decision">
+          <h4>Cursor pagination, not offset</h4>
+          <p>ObjectId is monotonic, so <code>{ _id: { $gt: cursor } }</code> is a stable, index-friendly sort key. Offset pagination degrades with depth — the seeder targets up to 1 crore products, where that matters.</p>
+        </div>
+        <div class="decision n">
+          <h4>No auth, no <code>userId</code></h4>
+          <p>Cart and Wishlist are single global collections. Fine at learning-project scope; multi-tenant would need a <code>userId</code> partition key plus auth middleware everywhere.</p>
+          <p class="superseded">→ superseded — see §10: the Users module now adds auth + mandatory userId scoping on both collections</p>
+        </div>
+        <div class="decision n">
+          <h4>Redis is a gatekeeper-guarded cache, never a hard dependency</h4>
+          <p>Superseded the earlier "Redis connects, nothing uses it" note once Users/Auth (<a href="#auth">§10</a>) put it to work. Full resilience mechanics — boot sequence, runtime gatekeeper, config, decisions — now live in their own section, <a href="#redis">§04</a>.</p>
+        </div>
+        <div class="decision">
+          <h4><code>res.headersSent</code> guard in <code>errorHandler</code></h4>
+          <p><code>requestTimeout</code> can end a response while a slow query is still running — writing headers again would throw <code>ERR_HTTP_HEADERS_SENT</code>, so that case delegates to Express's own final handler instead.</p>
+        </div>
+        <div class="decision">
+          <h4>CastError auto-maps to 400</h4>
+          <p>A malformed <code>:id</code> is a client mistake, not a server fault. Without this branch it falls through to the generic 500 path and gets logged as if it were a real bug.</p>
+        </div>
+        <div class="decision n">
+          <h4>Seeder bypasses Mongoose hydration</h4>
+          <p>Bulk-inserts via the raw MongoDB driver and drops non-<code>_id</code> indexes before the insert, rebuilding after. At millions-of-docs scale, document hydration and live index maintenance are the dominant costs.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</div>
